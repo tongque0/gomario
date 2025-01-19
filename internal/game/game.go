@@ -1,6 +1,7 @@
 package game
 
 import (
+	"gomario/internal/level"
 	"gomario/pkg/sound"
 	"log"
 
@@ -9,7 +10,7 @@ import (
 )
 
 type Game struct {
-	Level   int
+	Level   *level.Level
 	BgSound *audio.Player
 }
 
@@ -22,8 +23,7 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	// 在屏幕上显示游戏信息或其他元素
-	// ebitenutil.DebugPrint(screen, "Go之破晓")
+	g.Level.Draw(screen)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
@@ -43,7 +43,7 @@ func Run() {
 	bgsound := sound.NewBgSoundPlayer()
 	// 初始化游戏并设置背景音频
 	game := &Game{
-		Level:   1,
+		Level:   level.NewLevel(),
 		BgSound: bgsound,
 	}
 

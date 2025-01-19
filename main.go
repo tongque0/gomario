@@ -8,3 +8,4 @@ func main() {
 	//启动游戏
 	game.Run()
 }
+
