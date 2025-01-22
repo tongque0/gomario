@@ -59,8 +59,8 @@ func CheckPlayerTerrainCollision(player *mario.Mario, terrain []*terrain.Terrain
 	for _, t := range terrain {
 		terrainRect := Rectangle{t.X, t.Y, t.Width, t.Height}
 		if direction := CheckCollision(playerRect, terrainRect); direction != None {
-			player.OnTerrainCollision(int(direction))
-			t.OnMarioCollision(int(direction))
+			t.OnMarioCollision(int(direction), player.IsBig, player.IsJumping)
+			player.OnTerrainCollision(int(direction), t.X, t.Y, t.Width, t.Height)
 		}
 	}
 }

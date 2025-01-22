@@ -8,13 +8,18 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/audio/vorbis"
 )
 
+var audioContext *audio.Context
+
+func init() {
+	audioContext = audio.NewContext(44100)
+}
 func NewBgSoundPlayer() *audio.Player {
+	return loadMusic("music/main_theme.ogg")
+}
 
-	// 创建音频播放器
-	audioContext := audio.NewContext(44100)
-
+func loadMusic(filename string) *audio.Player {
 	// 打开背景音乐文件（OGG格式）
-	file, err := assets.Assets.Open("music/main_theme.ogg")
+	file, err := assets.Assets.Open(filename)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -26,10 +31,10 @@ func NewBgSoundPlayer() *audio.Player {
 	}
 
 	// 创建音频播放器
-	bgSound, err := audioContext.NewPlayer(audioData)
+	player, err := audioContext.NewPlayer(audioData)
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	return bgSound
+	return player
 }
+

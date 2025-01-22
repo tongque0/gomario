@@ -12,7 +12,8 @@ var Assets embed.FS
 const (
 	ScreenWidth, ScreenHeight = 512, 480                             // 屏幕尺寸,比例最好为4:3
 	CellSize                  = min(ScreenWidth/16, ScreenHeight/15) // 图像单元的尺寸，根据屏幕尺寸计算
-	IsDebug                   = true                                 // 是否开启调试模式
+
+	IsDebug = true // 是否开启调试模式
 )
 
 //游戏单元格说明

@@ -21,7 +21,7 @@ type MarioGraphics struct {
 	BigWalkingRightImages  []*ebiten.Image // 奔跑
 	BigJumpingRightImages  *ebiten.Image   // 跳跃
 	BigSkiddingRightImages *ebiten.Image   // 滑行
-
+	BigDuckingRightImages  *ebiten.Image   // 蹲下
 	//图形资源的宽高
 	SmallWidth, SmallHeight int
 	BigWidth, BigHeight     int
@@ -43,9 +43,9 @@ func (mg *MarioGraphics) loadResources() {
 	//加载小马里奥的图像资源(右)
 	mg.SmallWidth, mg.SmallHeight = 16, 16
 	mg.SmallIdleRightImages = loadSubImage(spriteSheet, 178, 32, 12, 16)
-	mg.SmallWalkingRightImages = append(mg.BigWalkingRightImages, loadSubImage(spriteSheet, 80, 32, 15, 16))
-	mg.SmallWalkingRightImages = append(mg.BigWalkingRightImages, loadSubImage(spriteSheet, 96, 32, 16, 16))
-	mg.SmallWalkingRightImages = append(mg.BigWalkingRightImages, loadSubImage(spriteSheet, 112, 32, 16, 16))
+	mg.SmallWalkingRightImages = append(mg.SmallWalkingRightImages, loadSubImage(spriteSheet, 80, 32, 15, 16))
+	mg.SmallWalkingRightImages = append(mg.SmallWalkingRightImages, loadSubImage(spriteSheet, 96, 32, 16, 16))
+	mg.SmallWalkingRightImages = append(mg.SmallWalkingRightImages, loadSubImage(spriteSheet, 112, 32, 16, 16))
 	mg.SmallJumpingRightImages = loadSubImage(spriteSheet, 144, 32, 16, 16)
 	mg.SmallSkiddingRightImages = loadSubImage(spriteSheet, 130, 32, 14, 16)
 	mg.SmallDeathRightImages = loadSubImage(spriteSheet, 160, 32, 15, 16)
@@ -58,6 +58,7 @@ func (mg *MarioGraphics) loadResources() {
 	mg.BigWalkingRightImages = append(mg.BigWalkingRightImages, loadSubImage(spriteSheet, 113, 0, 15, 32))
 	mg.BigJumpingRightImages = loadSubImage(spriteSheet, 144, 0, 16, 32)
 	mg.BigSkiddingRightImages = loadSubImage(spriteSheet, 128, 0, 16, 32)
+	mg.BigDuckingRightImages = loadSubImage(spriteSheet, 160, 0, 16, 32)
 
 }
 

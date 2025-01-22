@@ -1,9 +1,11 @@
 package terrain
 
 import (
+	"fmt"
 	"gomario/assets"
+	destroyeffect "gomario/pkg/destroyEffect"
+	"gomario/pkg/sound"
 	"image/color"
-	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -14,9 +16,14 @@ type Terrain struct {
 	Kind           int
 	Graphics       *TerrainGraphics
 	ScaleX, ScaleY float64
-	AnimationTimer time.Time
-	IsAnimating    bool
 	Destroyed      bool
+}
+type TerrainDebris struct {
+	X, Y                 float64
+	VelocityX, VelocityY float64
+	Width, Height        float64
+	Rotation             float64
+	RotationSpeed        float64
 }
 
 // NewTerrain 创建地形
@@ -53,25 +60,16 @@ func NewTerrain(gridX, gridY int, kind int) *Terrain {
 }
 
 func (t *Terrain) Update() {
-	if t.IsAnimating {
-		if time.Since(t.AnimationTimer) > 500*time.Millisecond {
-			t.IsAnimating = false
-		}
-	}
+
 }
 func (t *Terrain) Draw(screen *ebiten.Image) {
-	if t.Destroyed {
-		return // 如果地形已被销毁，则不绘制
-	}
-
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Scale(t.ScaleX, t.ScaleY)
-	op.GeoM.Translate(t.X, t.Y)
 
-	// // 如果正在动画中，则向上移动 4 像素
-	// if t.IsAnimating {
-	// 	op.GeoM.Translate(0, -4) // 向上移动 4 像素
-	// }
+	op.GeoM.Translate(t.X, t.Y)
+	if t.Destroyed {
+		return
+	}
 
 	screen.DrawImage(t.Graphics.Image, op)
 
@@ -89,23 +87,23 @@ func (t *Terrain) Draw(screen *ebiten.Image) {
 	}
 }
 
-// StartAnimation 开始动画
-func (t *Terrain) StartAnimation() {
-	t.IsAnimating = true
-	t.AnimationTimer = time.Now()
-}
-
 // Destroy 销毁地形
 func (t *Terrain) Destroy() {
 	t.Destroyed = true
+	destroyeffect.NewTerrainEffect(t.X, t.Y, t.Width, t.Height, *t.Graphics.Image, t.ScaleX, t.ScaleY)
 }
 
 // OnMarioCollision 处理马里奥与地形的碰撞
 // 默认情况下,地形不会有变化
-func (t *Terrain) OnMarioCollision(direction int) {
+func (t *Terrain) OnMarioCollision(direction int, isbig, isjumping bool) {
 	switch t.Kind {
-	case 0:
-		return
+	case 0: // 不可破坏的墙壁
+		fmt.Println("Unbreakable wall")
+	case 1: // 可破坏的墙壁
+		if direction == 1 && isbig && isjumping {
+			sound.NewSfxPlayer("brick_smash")
+			t.Destroy()
+		}
 	default:
 		return
 	}

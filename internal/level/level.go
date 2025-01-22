@@ -43,10 +43,22 @@ func NewLevel() *Level {
 			terrain.NewTerrain(13, 14, 2),
 			terrain.NewTerrain(14, 14, 2),
 			terrain.NewTerrain(15, 14, 2),
+			terrain.NewTerrain(3, 11, 1),
+			terrain.NewTerrain(4, 11, 1),
+			terrain.NewTerrain(5, 11, 1),
+			terrain.NewTerrain(6, 10, 1),
+			terrain.NewTerrain(7, 10, 1),
 		},
 	}
 }
 func (l *Level) Update() {
+	//遍历物品，销毁已经被销毁的物品
+	for i := 0; i < len(l.Terrain); i++ {
+		if l.Terrain[i].Destroyed {
+			l.Terrain = append(l.Terrain[:i], l.Terrain[i+1:]...)
+			i--
+		}
+	}
 	physics.CheckPlayerEnemyCollision(l.Mario, l.Enemies)
 	// physics.CheckPlayerTerrainCollision(l.Mario, l.Item)
 	physics.CheckPlayerTerrainCollision(l.Mario, l.Terrain)
