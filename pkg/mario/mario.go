@@ -1,12 +1,15 @@
 package mario
 
 import (
+	"gomario/assets"
+
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
 type Mario struct {
 	X, Y                 float64        // 位置
 	VelocityX, VelocityY float64        // 速度
+	ScaleX, ScaleY       float64        // 缩放比例
 	Width, Height        float64        // 尺寸
 	State                int            // 当前状态（例如：站立、奔跑、跳跃等）
 	IsBig                bool           // 是否是大马里奥
@@ -37,27 +40,43 @@ const (
 	DirectionRight
 )
 
-func NewMario() *Mario {
-	return &Mario{
-		X:        0,
-		Y:        0,
-		State:    0,
-		Graphics: NewMarioGraphics(),
+func NewMario(gridX, gridY int) *Mario {
+	marioGraphics := NewMarioGraphics()
+
+	// 计算缩放比例
+	scaleX := assets.CellSize / float64(marioGraphics.SmallWidth)
+	scaleY := assets.CellSize / float64(marioGraphics.SmallHeight)
+
+	mario := Mario{
+		X:         float64(gridX) * assets.CellSize, // 使用网格坐标计算实际坐标
+		Y:         float64(gridY) * assets.CellSize, // 使用网格坐标计算实际坐标
+		State:     StateFalling,
+		Width:     float64(marioGraphics.SmallWidth) * scaleX,
+		Height:    float64(marioGraphics.SmallHeight) * scaleY,
+		Direction: DirectionLeft,
+		IsBig:     false,
+		Graphics:  marioGraphics,
+		ScaleX:    scaleX,
+		ScaleY:    scaleY,
 	}
+	return &mario
 }
 func (m *Mario) Update() {
 	// 更新马里奥的位置
 	m.X += m.VelocityX
 	m.Y += m.VelocityY
-
+	// fmt.Println(m.State)
 	// 更新马里奥的状态
 	switch m.State {
 	case StateRunning:
-		// 处理奔跑逻辑
+		m.AnimationFrame++
+		if m.AnimationFrame >= len(m.Graphics.SmallWalkingRightImages) {
+			m.AnimationFrame = 0
+		}
 	case StateJumping:
 		// 处理跳跃逻辑
 	case StateFalling:
-		// 处理下落逻辑
+		m.VelocityY = 10
 	case StateDead:
 		// 处理死亡逻辑
 	}
@@ -65,30 +84,66 @@ func (m *Mario) Update() {
 func (m *Mario) Draw(screen *ebiten.Image) {
 	// 根据马里奥的状态和方向绘制马里奥
 
-	// switch m.State {
-	// case StateIdle:
-	// 	img = idleImage
-	// case StateRunning:
-	// 	img = runningImages[m.AnimationFrame]
-	// case StateJumping:
-	// 	img = jumpingImage
-	// case StateFalling:
-	// 	img = fallingImage
-	// case StateDead:
-	// 	img = deadImage
-	// }
+	op := &ebiten.DrawImageOptions{}
+	op.GeoM.Scale(m.ScaleX, m.ScaleY)
+	op.GeoM.Translate(m.X, m.Y)
+	var img *ebiten.Image
+	if m.IsBig {
+		switch m.State {
+		case StateIdle:
+			img = m.Graphics.BigIdleRightImages
+		case StateRunning:
+			img = m.Graphics.BigWalkingRightImages[m.AnimationFrame]
+		case StateJumping:
+			img = m.Graphics.BigJumpingRightImages
+		case StateFalling:
+			img = m.Graphics.BigJumpingRightImages
+		case StateDucking:
+			img = m.Graphics.BigSkiddingRightImages
+		}
+	} else {
+		switch m.State {
+		case StateIdle:
+			img = m.Graphics.SmallIdleRightImages
+		case StateRunning:
+			img = m.Graphics.SmallWalkingRightImages[m.AnimationFrame]
+		case StateJumping:
+			img = m.Graphics.SmallJumpingRightImages
+		case StateFalling:
+			img = m.Graphics.SmallJumpingRightImages
+		case StateDucking:
+			img = m.Graphics.SmallSkiddingRightImages
+		case StateDead:
+			img = m.Graphics.SmallDeathRightImages
+		}
+	}
+
+	if m.Direction == DirectionLeft {
+		op.GeoM.Scale(-1, 1)          // 镜像水平翻转
+		op.GeoM.Translate(m.Width, 0) // 调整位置
+	}
+
+	if img != nil {
+		screen.DrawImage(img, op)
+	}
 
 }
 
+// dirction: 1-top, 2-bottom, 3-left, 4-right
 func (m *Mario) OnTerrainCollision(direction int) {
 	// 处理马里奥与地形的碰撞
+	//上下碰撞,Y轴速度清零;左右碰撞,X轴速度清零;
 	switch direction {
 	case 1:
 		m.VelocityY = 0
-		m.Y -= m.Height
+		m.State = StateFalling
+		m.IsJumping = false
+		m.IsFalling = true
 	case 2:
 		m.VelocityY = 0
-		m.Y += m.Height
+		m.IsJumping = false
+		m.IsFalling = false
+		m.State = StateIdle
 	case 3:
 		m.VelocityX = 0
 		m.X -= m.Width

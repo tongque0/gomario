@@ -22,6 +22,9 @@ type MarioGraphics struct {
 	BigJumpingRightImages  *ebiten.Image   // 跳跃
 	BigSkiddingRightImages *ebiten.Image   // 滑行
 
+	//图形资源的宽高
+	SmallWidth, SmallHeight int
+	BigWidth, BigHeight     int
 }
 
 func NewMarioGraphics() *MarioGraphics {
@@ -38,6 +41,7 @@ func (mg *MarioGraphics) loadResources() {
 		log.Fatal(err)
 	}
 	//加载小马里奥的图像资源(右)
+	mg.SmallWidth, mg.SmallHeight = 16, 16
 	mg.SmallIdleRightImages = loadSubImage(spriteSheet, 178, 32, 12, 16)
 	mg.SmallWalkingRightImages = append(mg.BigWalkingRightImages, loadSubImage(spriteSheet, 80, 32, 15, 16))
 	mg.SmallWalkingRightImages = append(mg.BigWalkingRightImages, loadSubImage(spriteSheet, 96, 32, 16, 16))
@@ -47,12 +51,14 @@ func (mg *MarioGraphics) loadResources() {
 	mg.SmallDeathRightImages = loadSubImage(spriteSheet, 160, 32, 15, 16)
 
 	//加载大马里奥的图像资源(右)
+	mg.BigWidth, mg.BigHeight = 16, 32
 	mg.BigIdleRightImages = loadSubImage(spriteSheet, 176, 0, 16, 32)
 	mg.BigWalkingRightImages = append(mg.BigWalkingRightImages, loadSubImage(spriteSheet, 81, 0, 16, 32))
 	mg.BigWalkingRightImages = append(mg.BigWalkingRightImages, loadSubImage(spriteSheet, 97, 0, 15, 32))
 	mg.BigWalkingRightImages = append(mg.BigWalkingRightImages, loadSubImage(spriteSheet, 113, 0, 15, 32))
 	mg.BigJumpingRightImages = loadSubImage(spriteSheet, 144, 0, 16, 32)
 	mg.BigSkiddingRightImages = loadSubImage(spriteSheet, 128, 0, 16, 32)
+
 }
 
 // 从精灵图中切割出指定位置和尺寸的子图像

@@ -19,7 +19,7 @@ type Level struct {
 
 func NewLevel() *Level {
 	return &Level{
-		Mario: mario.NewMario(),
+		Mario: mario.NewMario(0, 0),
 		// Enemies: []*enemies.Enemies{
 		// 	enemies.NewEnemies(),
 		// },
@@ -27,21 +27,36 @@ func NewLevel() *Level {
 		// 	item.NewItem(),
 		// },
 		Terrain: []*terrain.Terrain{
-			terrain.NewTerrain(0, 0, 0),
-			// terrain.NewTerrain(16, 16, 0),
-			// terrain.NewTerrain(32, 32, 0),
-			// terrain.NewTerrain(48, 48, 0),
-			// terrain.NewTerrain(64, 64, 0),
+			terrain.NewTerrain(0, 14, 2),
+			terrain.NewTerrain(1, 14, 2),
+			terrain.NewTerrain(2, 14, 2),
+			terrain.NewTerrain(3, 14, 2),
+			terrain.NewTerrain(4, 14, 2),
+			terrain.NewTerrain(5, 14, 2),
+			terrain.NewTerrain(6, 14, 2),
+			terrain.NewTerrain(7, 14, 2),
+			terrain.NewTerrain(8, 14, 2),
+			terrain.NewTerrain(9, 14, 2),
+			terrain.NewTerrain(10, 14, 2),
+			terrain.NewTerrain(11, 14, 2),
+			terrain.NewTerrain(12, 14, 2),
+			terrain.NewTerrain(13, 14, 2),
+			terrain.NewTerrain(14, 14, 2),
+			terrain.NewTerrain(15, 14, 2),
 		},
 	}
 }
 func (l *Level) Update() {
 	physics.CheckPlayerEnemyCollision(l.Mario, l.Enemies)
 	// physics.CheckPlayerTerrainCollision(l.Mario, l.Item)
+	physics.CheckPlayerTerrainCollision(l.Mario, l.Terrain)
+	for _, terrain := range l.Terrain {
+		terrain.Update()
+	}
+	l.Mario.Update()
 
 }
 func (l *Level) Draw(screen *ebiten.Image) {
-	l.Mario.Draw(screen)
 	// for _, enemy := range l.Enemies {
 	// 	enemy.Draw(screen)
 	// }
@@ -51,4 +66,5 @@ func (l *Level) Draw(screen *ebiten.Image) {
 	for _, terrain := range l.Terrain {
 		terrain.Draw(screen)
 	}
+	l.Mario.Draw(screen)
 }

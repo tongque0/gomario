@@ -23,18 +23,30 @@ const (
 
 // CheckCollision 检查两个矩形是否相交，并处理碰撞
 func CheckCollision(rect1, rect2 Rectangle) CollisionDirection {
-	if rect1.X < rect2.X+rect2.Width &&
-		rect1.X+rect1.Width > rect2.X &&
-		rect1.Y < rect2.Y+rect2.Height &&
-		rect1.Y+rect1.Height > rect2.Y {
-		// 碰撞发生，确定碰撞方向
-		if rect1.Y+rect1.Height-rect2.Y < rect1.Height/2 {
+	// 判断是否发生碰撞
+	if rect1.X < rect2.X+rect2.Width && rect1.X+rect1.Width > rect2.X &&
+		rect1.Y < rect2.Y+rect2.Height && rect1.Y+rect1.Height > rect2.Y {
+
+		// 确定碰撞方向
+		overlapTop := rect2.Y + rect2.Height - rect1.Y
+		overlapBottom := rect1.Y + rect1.Height - rect2.Y
+		overlapLeft := rect2.X + rect2.Width - rect1.X
+		overlapRight := rect1.X + rect1.Width - rect2.X
+
+		// 底部碰撞
+		if overlapBottom < overlapTop && overlapBottom < overlapLeft && overlapBottom < overlapRight {
 			return Bottom
-		} else if rect2.Y+rect2.Height-rect1.Y < rect1.Height/2 {
+		}
+		// 顶部碰撞
+		if overlapTop < overlapBottom && overlapTop < overlapLeft && overlapTop < overlapRight {
 			return Top
-		} else if rect1.X+rect1.Width-rect2.X < rect1.Width/2 {
+		}
+		// 右侧碰撞
+		if overlapRight < overlapLeft && overlapRight < overlapTop && overlapRight < overlapBottom {
 			return Right
-		} else if rect2.X+rect2.Width-rect1.X < rect1.Width/2 {
+		}
+		// 左侧碰撞
+		if overlapLeft < overlapRight && overlapLeft < overlapTop && overlapLeft < overlapBottom {
 			return Left
 		}
 	}
@@ -48,6 +60,7 @@ func CheckPlayerTerrainCollision(player *mario.Mario, terrain []*terrain.Terrain
 		terrainRect := Rectangle{t.X, t.Y, t.Width, t.Height}
 		if direction := CheckCollision(playerRect, terrainRect); direction != None {
 			player.OnTerrainCollision(int(direction))
+			t.OnMarioCollision(int(direction))
 		}
 	}
 }

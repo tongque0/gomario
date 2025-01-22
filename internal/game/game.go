@@ -1,6 +1,7 @@
 package game
 
 import (
+	"gomario/assets"
 	"gomario/internal/level"
 	"gomario/pkg/sound"
 	"log"
@@ -19,6 +20,7 @@ func (g *Game) Update() error {
 	if g.BgSound != nil && !g.BgSound.IsPlaying() {
 		g.BgSound.Play()
 	}
+	g.Level.Update()
 	return nil
 }
 
@@ -27,15 +29,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
-	// 保持 16:9 的宽高比
-	const aspectRatio = 16.0 / 9.0
-	width := outsideWidth
-	height := int(float64(outsideWidth) / aspectRatio)
-	if height > outsideHeight {
-		height = outsideHeight
-		width = int(float64(outsideHeight) * aspectRatio)
-	}
-	return width, height
+	return outsideWidth, outsideHeight
 }
 
 func Run() {
@@ -48,7 +42,7 @@ func Run() {
 	}
 
 	// 设置窗口尺寸
-	ebiten.SetWindowSize(1280, 720) // 初始窗口大小
+	ebiten.SetWindowSize(assets.ScreenWidth, assets.ScreenHeight) // 初始窗口大小
 	ebiten.SetWindowTitle("gomario")
 
 	// 运行游戏
