@@ -41,7 +41,7 @@ func Run() {
 	bgsound := sound.NewBgSoundPlayer()
 	// 初始化游戏并设置背景音频
 	game := &Game{
-		Level:         level.NewLevel(),
+		Level:         level.NewLevel(1),
 		BgSound:       bgsound,
 		destroyeffect: destroyeffect.NewDestroyEffect(),
 	}

@@ -1,15 +1,34 @@
 package level
 
 import (
+	"encoding/json"
+	"gomario/assets"
 	"gomario/pkg/enemies"
 	"gomario/pkg/item"
 	"gomario/pkg/mario"
 	"gomario/pkg/physics"
 	"gomario/pkg/terrain"
+	"io/ioutil"
+	"log"
+	"strconv"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
+type LevelConfig struct {
+	Mario   MarioConfig           `json:"mario"`
+	Terrain map[string][]Position `json:"terrain"`
+	Enemies map[string][]Position `json:"enemies"`
+	Items   map[string][]Position `json:"items"`
+}
+type MarioConfig struct {
+	StartX int `json:"startX"`
+	StartY int `json:"startY"`
+}
+type Position struct {
+	X int `json:"x"`
+	Y int `json:"y"`
+}
 type Level struct {
 	Mario   *mario.Mario
 	Enemies []*enemies.Enemies
@@ -17,39 +36,51 @@ type Level struct {
 	Terrain []*terrain.Terrain
 }
 
-func NewLevel() *Level {
-	return &Level{
-		Mario: mario.NewMario(0, 0),
-		// Enemies: []*enemies.Enemies{
-		// 	enemies.NewEnemies(),
-		// },
-		// Item: []*item.Item{
-		// 	item.NewItem(),
-		// },
-		Terrain: []*terrain.Terrain{
-			terrain.NewTerrain(0, 14, 2),
-			terrain.NewTerrain(1, 14, 2),
-			terrain.NewTerrain(2, 14, 2),
-			terrain.NewTerrain(3, 14, 2),
-			terrain.NewTerrain(4, 14, 2),
-			terrain.NewTerrain(5, 14, 2),
-			terrain.NewTerrain(6, 14, 2),
-			terrain.NewTerrain(7, 14, 2),
-			terrain.NewTerrain(8, 14, 2),
-			terrain.NewTerrain(9, 14, 2),
-			terrain.NewTerrain(10, 14, 2),
-			terrain.NewTerrain(11, 14, 2),
-			terrain.NewTerrain(12, 14, 2),
-			terrain.NewTerrain(13, 14, 2),
-			terrain.NewTerrain(14, 14, 2),
-			terrain.NewTerrain(15, 14, 2),
-			terrain.NewTerrain(3, 11, 1),
-			terrain.NewTerrain(4, 11, 1),
-			terrain.NewTerrain(5, 11, 1),
-			terrain.NewTerrain(6, 10, 1),
-			terrain.NewTerrain(7, 10, 1),
-		},
+// 根据配置文件，创建关卡
+// level: 关卡编号
+func NewLevel(level int) *Level {
+	file, err := assets.Assets.Open("level/level" + strconv.Itoa(level) + ".json")
+	if err != nil {
+		log.Fatal(err)
 	}
+	defer file.Close()
+
+	byteValue, _ := ioutil.ReadAll(file)
+
+	var config LevelConfig
+	if err := json.Unmarshal(byteValue, &config); err != nil {
+		log.Fatal("Error parsing level config:", err)
+	}
+
+	lvl := &Level{
+		Mario: mario.NewMario(config.Mario.StartX, config.Mario.StartY),
+	}
+
+	for typeStr, positions := range config.Terrain {
+		terrainType, _ := strconv.Atoi(typeStr) // 转换类型为int
+		for _, pos := range positions {
+			lvl.Terrain = append(lvl.Terrain, terrain.NewTerrain(pos.X, pos.Y, terrainType))
+		}
+	}
+
+	// // 初始化敌人
+	// for enemyType, positions := range config.Enemies {
+	// 	for _, pos := range positions {
+	// 		enemy := enemies.NewEnemy(enemyType)
+	// 		enemy.SetPosition(pos.X, pos.Y)
+	// 		lvl.Enemies = append(lvl.Enemies, enemy)
+	// 	}
+	// }
+
+	// // 初始化物品
+	// for itemType, positions := range config.Items {
+	// 	for _, pos := range positions {
+	// 		item := item.NewItem(itemType)
+	// 		item.SetPosition(pos.X, pos.Y)
+	// 		lvl.Items = append(lvl.Items, item)
+	// 	}
+	// }
+	return lvl
 }
 func (l *Level) Update() {
 	//遍历物品，销毁已经被销毁的物品
