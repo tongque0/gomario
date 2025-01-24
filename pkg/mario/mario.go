@@ -2,6 +2,7 @@ package mario
 
 import (
 	"gomario/assets"
+	"gomario/internal/camera.go"
 	"image/color"
 	"time"
 
@@ -44,6 +45,8 @@ const (
 	DirectionRight
 )
 
+var _ camera.Drawable = (*Mario)(nil)
+
 func NewMario(gridX, gridY int) *Mario {
 	marioGraphics := NewMarioGraphics()
 
@@ -64,6 +67,16 @@ func NewMario(gridX, gridY int) *Mario {
 		ScaleY:    scaleY,
 	}
 	return &mario
+}
+
+// GetPosition 返回马里奥的世界坐标
+func (m *Mario) GetPosition() (float64, float64) {
+	return m.X, m.Y
+}
+
+// GetSize 返回马里奥的尺寸
+func (m *Mario) GetSize() (float64, float64) {
+	return m.Width, m.Height
 }
 func (m *Mario) Update() {
 	// 更新马里奥的位置
@@ -98,24 +111,30 @@ func (m *Mario) Update() {
 		// 处理死亡逻辑
 	}
 }
-func (m *Mario) Draw(screen *ebiten.Image) {
+func (m *Mario) Draw(screen *ebiten.Image, camera *camera.Camera) {
 	op := &ebiten.DrawImageOptions{}
 
-	//绘制偏移量，处理一些特殊状态下的绘制位置偏移，例如下蹲
+	// 计算屏幕坐标
+	screenX := m.X - camera.X
+	screenY := m.Y - camera.Y
+
+	// 绘制偏移量，处理一些特殊状态下的绘制位置偏移，例如下蹲
 	drawOffsetY := float64(0)
 	if m.State == StateDucking && m.IsBig {
 		// 下蹲时，将绘制位置向上偏移半个身位
 		drawOffsetY = -(float64(m.Graphics.BigHeight) - float64(m.Graphics.SmallHeight)) * m.ScaleY * 0.75
 	}
+
 	// 根据方向设置缩放和位置
 	if m.Direction == DirectionLeft {
 		op.GeoM.Scale(-m.ScaleX, m.ScaleY)
-		op.GeoM.Translate(m.X+m.Width, m.Y+drawOffsetY)
+		op.GeoM.Translate(screenX+m.Width, screenY+drawOffsetY)
 	} else {
 		op.GeoM.Scale(m.ScaleX, m.ScaleY)
-		op.GeoM.Translate(m.X, m.Y+drawOffsetY)
+		op.GeoM.Translate(screenX, screenY+drawOffsetY)
 	}
 
+	// 选择当前帧
 	var img *ebiten.Image
 	if m.IsBig {
 		switch m.State {
@@ -155,17 +174,20 @@ func (m *Mario) Draw(screen *ebiten.Image) {
 		}
 	}
 
+	// 绘制图像
 	if img != nil {
 		screen.DrawImage(img, op)
 	}
+
+	// 调试模式下绘制碰撞框
 	if assets.IsDebug {
 		blue := color.RGBA{0, 0, 255, 255}
 		for dx := -1; dx <= 1; dx++ {
 			for dy := -1; dy <= 1; dy++ {
-				screen.Set(int(m.X)+dx, int(m.Y)+dy, blue)                  // Top-left
-				screen.Set(int(m.X+m.Width)+dx, int(m.Y)+dy, blue)          // Top-right
-				screen.Set(int(m.X)+dx, int(m.Y+m.Height)+dy, blue)         // Bottom-left
-				screen.Set(int(m.X+m.Width)+dx, int(m.Y+m.Height)+dy, blue) // Bottom-right
+				screen.Set(int(screenX)+dx, int(screenY)+dy, blue)                  // Top-left
+				screen.Set(int(screenX+m.Width)+dx, int(screenY)+dy, blue)          // Top-right
+				screen.Set(int(screenX)+dx, int(screenY+m.Height)+dy, blue)         // Bottom-left
+				screen.Set(int(screenX+m.Width)+dx, int(screenY+m.Height)+dy, blue) // Bottom-right
 			}
 		}
 	}

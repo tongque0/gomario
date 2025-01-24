@@ -9,6 +9,8 @@
 package destroyeffect
 
 import (
+	"gomario/internal/camera.go"
+
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
@@ -34,8 +36,8 @@ func (e *DestroyEffect) Update() {
 	}
 }
 
-func (e *DestroyEffect) Draw(screen *ebiten.Image) {
+func (e *DestroyEffect) Draw(screen *ebiten.Image,camera *camera.Camera) {
 	for i := 0; i < len(terrainEffect); i++ {
-		terrainEffect[i].Draw(screen)
+		terrainEffect[i].Draw(screen,camera)
 	}
 }

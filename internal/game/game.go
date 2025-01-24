@@ -3,7 +3,6 @@ package game
 import (
 	"gomario/assets"
 	"gomario/internal/level"
-	destroyeffect "gomario/pkg/destroyEffect"
 	"gomario/pkg/sound"
 	"log"
 
@@ -12,9 +11,8 @@ import (
 )
 
 type Game struct {
-	Level         *level.Level
-	BgSound       *audio.Player
-	destroyeffect *destroyeffect.DestroyEffect
+	Level   *level.Level
+	BgSound *audio.Player
 }
 
 func (g *Game) Update() error {
@@ -23,16 +21,15 @@ func (g *Game) Update() error {
 		g.BgSound.Play()
 	}
 	g.Level.Update()
-	g.destroyeffect.Update()
 	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
 	g.Level.Draw(screen)
-	g.destroyeffect.Draw(screen)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
+
 	return outsideWidth, outsideHeight
 }
 
@@ -41,9 +38,8 @@ func Run() {
 	bgsound := sound.NewBgSoundPlayer()
 	// 初始化游戏并设置背景音频
 	game := &Game{
-		Level:         level.NewLevel(1),
-		BgSound:       bgsound,
-		destroyeffect: destroyeffect.NewDestroyEffect(),
+		Level:   level.NewLevel(1),
+		BgSound: bgsound,
 	}
 
 	// 设置窗口尺寸

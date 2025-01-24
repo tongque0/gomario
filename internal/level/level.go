@@ -3,12 +3,14 @@ package level
 import (
 	"encoding/json"
 	"gomario/assets"
+	"gomario/internal/camera.go"
+	destroyeffect "gomario/pkg/destroyEffect"
 	"gomario/pkg/enemies"
 	"gomario/pkg/item"
 	"gomario/pkg/mario"
 	"gomario/pkg/physics"
 	"gomario/pkg/terrain"
-	"io/ioutil"
+	"io"
 	"log"
 	"strconv"
 
@@ -16,10 +18,15 @@ import (
 )
 
 type LevelConfig struct {
-	Mario   MarioConfig           `json:"mario"`
-	Terrain map[string][]Position `json:"terrain"`
-	Enemies map[string][]Position `json:"enemies"`
-	Items   map[string][]Position `json:"items"`
+	MapConfig MapConfig             `json:"mapconfig"`
+	Mario     MarioConfig           `json:"mario"`
+	Terrain   map[string][]Position `json:"terrain"`
+	Enemies   map[string][]Position `json:"enemies"`
+	Items     map[string][]Position `json:"items"`
+}
+type MapConfig struct {
+	Width  int `json:"width"`
+	Height int `json:"height"`
 }
 type MarioConfig struct {
 	StartX int `json:"startX"`
@@ -30,10 +37,12 @@ type Position struct {
 	Y int `json:"y"`
 }
 type Level struct {
-	Mario   *mario.Mario
-	Enemies []*enemies.Enemies
-	Item    []*item.Item
-	Terrain []*terrain.Terrain
+	Camera        *camera.Camera
+	Mario         *mario.Mario
+	Enemies       []*enemies.Enemies
+	Item          []*item.Item
+	Terrain       []*terrain.Terrain
+	destroyeffect *destroyeffect.DestroyEffect
 }
 
 // 根据配置文件，创建关卡
@@ -45,7 +54,7 @@ func NewLevel(level int) *Level {
 	}
 	defer file.Close()
 
-	byteValue, _ := ioutil.ReadAll(file)
+	byteValue, _ := io.ReadAll(file)
 
 	var config LevelConfig
 	if err := json.Unmarshal(byteValue, &config); err != nil {
@@ -53,9 +62,11 @@ func NewLevel(level int) *Level {
 	}
 
 	lvl := &Level{
-		Mario: mario.NewMario(config.Mario.StartX, config.Mario.StartY),
+		destroyeffect: destroyeffect.NewDestroyEffect(),
+		Camera:        camera.NewCamera(assets.ScreenWidth, assets.ScreenHeight),
+		Mario:         mario.NewMario(config.Mario.StartX, config.Mario.StartY),
 	}
-
+	lvl.Camera.SetBounds(config.MapConfig.Width, config.MapConfig.Height)
 	for typeStr, positions := range config.Terrain {
 		terrainType, _ := strconv.Atoi(typeStr) // 转换类型为int
 		for _, pos := range positions {
@@ -83,6 +94,7 @@ func NewLevel(level int) *Level {
 	return lvl
 }
 func (l *Level) Update() {
+	l.destroyeffect.Update()
 	//遍历物品，销毁已经被销毁的物品
 	for i := 0; i < len(l.Terrain); i++ {
 		if l.Terrain[i].Destroyed {
@@ -97,17 +109,43 @@ func (l *Level) Update() {
 		terrain.Update()
 	}
 	l.Mario.Update()
+	l.Camera.Update(l.Mario.X, l.Mario.Y)
 
 }
 func (l *Level) Draw(screen *ebiten.Image) {
+	l.destroyeffect.Draw(screen, l.Camera)
+	drawables := make([]camera.Drawable, 0)
 	// for _, enemy := range l.Enemies {
-	// 	enemy.Draw(screen)
+	// 	drawables = append(drawables, enemy)
 	// }
 	// for _, item := range l.Item {
-	// 	item.Draw(screen)
+	// 	drawables = append(drawables, item)
 	// }
 	for _, terrain := range l.Terrain {
-		terrain.Draw(screen)
+		drawables = append(drawables, terrain)
 	}
-	l.Mario.Draw(screen)
+
+	drawables = append(drawables, l.Mario)
+
+	// 绘制所有对象
+	for _, d := range drawables {
+		if isVisible(d, l.Camera) {
+			d.Draw(screen, l.Camera)
+		}
+	}
+
+}
+func isVisible(d camera.Drawable, c *camera.Camera) bool {
+	x, y := d.GetPosition()
+	w, h := d.GetSize()
+
+	left := x - c.X
+	right := left + w
+	top := y - c.Y
+	bottom := top + h
+
+	return right > 0 &&
+		left < float64(c.ViewportWidth) &&
+		bottom > 0 &&
+		top < float64(c.ViewportHeight)
 }

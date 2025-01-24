@@ -4,6 +4,8 @@ package destroyeffect
 import (
 	"time"
 
+	"gomario/internal/camera.go"
+
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
@@ -65,14 +67,21 @@ func (e *TerrainEffect) Update() {
 	}
 }
 
-func (e *TerrainEffect) Draw(screen *ebiten.Image) {
+func (e *TerrainEffect) Draw(screen *ebiten.Image, camera *camera.Camera) {
 	for _, debris := range e.Debris {
+		// 计算屏幕坐标
+		screenX := debris.X - camera.X
+		screenY := debris.Y - camera.Y
+
+		// 创建绘制选项
 		op := &ebiten.DrawImageOptions{}
-		op.GeoM.Translate(-debris.Width/2, -debris.Height/2)
-		op.GeoM.Rotate(debris.Rotation)
-		op.GeoM.Translate(debris.Width/2, debris.Height/2)
-		op.GeoM.Scale(e.ScaleX/2, e.ScaleY/2)
-		op.GeoM.Translate(debris.X, debris.Y)
+		op.GeoM.Translate(-debris.Width/2, -debris.Height/2) // 旋转中心点
+		op.GeoM.Rotate(debris.Rotation)                      // 应用旋转
+		op.GeoM.Translate(debris.Width/2, debris.Height/2)   // 恢复位置
+		op.GeoM.Scale(e.ScaleX/2, e.ScaleY/2)                // 应用缩放
+		op.GeoM.Translate(screenX, screenY)                  // 应用屏幕坐标
+
+		// 绘制碎片
 		screen.DrawImage(&e.Image, op)
 	}
 }
