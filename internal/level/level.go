@@ -107,6 +107,12 @@ func (l *Level) Update() {
 	physics.CheckPlayerEnemyCollision(l.Mario, l.Enemies)
 	// physics.CheckPlayerTerrainCollision(l.Mario, l.Item)
 	physics.CheckPlayerTerrainCollision(l.Mario, l.Terrain)
+	for _, enemy := range l.Enemies {
+		enemy.Update()
+	}
+	for _, item := range l.Item {
+		item.Update()
+	}
 	for _, terrain := range l.Terrain {
 		terrain.Update()
 	}
@@ -119,13 +125,13 @@ func (l *Level) Draw(screen *ebiten.Image) {
 	l.DynamicItem.Draw(screen, l.Camera)
 	drawables := make([]camera.Drawable, 0)
 
-	// for _, enemy := range l.Enemies {
-	// 	drawables = append(drawables, enemy)
-	// }
+	for _, enemy := range l.Enemies {
+		drawables = append(drawables, enemy)
+	}
 
-	// for _, item := range l.Item {
-	// 	drawables = append(drawables, item)
-	// }
+	for _, item := range l.Item {
+		drawables = append(drawables, item)
+	}
 
 	for _, terrain := range l.Terrain {
 		drawables = append(drawables, terrain)

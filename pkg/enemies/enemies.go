@@ -12,15 +12,18 @@ type Enemies struct {
 	X, Y                 float64 // 位置
 	VelocityX, VelocityY float64 // 速度
 	Width, Height        float64 // 尺寸
-	Kind                 int     // 种类
+	Kind                 string  // 种类
 
 	IsDead   bool             // 是否死亡
 	Graphics *EnemiesGraphics // 敌人的图像资源
 }
 
-func (e *Enemies) NewEnemies(gridX, gridY int, kind int) *Enemies {
-
-	return &Enemies{}
+func NewEnemies(x, y int, kind string) *Enemies {
+	return &Enemies{
+		X:    float64(x),
+		Y:    float64(y),
+		Kind: kind,
+	}
 }
 
 func (e *Enemies) Update() {
