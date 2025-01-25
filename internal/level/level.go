@@ -41,6 +41,7 @@ type Level struct {
 	Mario         *mario.Mario
 	Enemies       []*enemies.Enemies
 	Item          []*item.Item
+	DynamicItem   *item.DynamicItem // 动态物品
 	Terrain       []*terrain.Terrain
 	destroyeffect *destroyeffect.DestroyEffect
 }
@@ -65,8 +66,12 @@ func NewLevel(level int) *Level {
 		destroyeffect: destroyeffect.NewDestroyEffect(),
 		Camera:        camera.NewCamera(assets.ScreenWidth, assets.ScreenHeight),
 		Mario:         mario.NewMario(config.Mario.StartX, config.Mario.StartY),
+		DynamicItem:   item.NewDynamicItem(),
 	}
+	// 设置地图边界
 	lvl.Camera.SetBounds(config.MapConfig.Width, config.MapConfig.Height)
+
+	// 初始化地形
 	for typeStr, positions := range config.Terrain {
 		terrainType, _ := strconv.Atoi(typeStr) // 转换类型为int
 		for _, pos := range positions {
@@ -74,27 +79,24 @@ func NewLevel(level int) *Level {
 		}
 	}
 
-	// // 初始化敌人
-	// for enemyType, positions := range config.Enemies {
-	// 	for _, pos := range positions {
-	// 		enemy := enemies.NewEnemy(enemyType)
-	// 		enemy.SetPosition(pos.X, pos.Y)
-	// 		lvl.Enemies = append(lvl.Enemies, enemy)
-	// 	}
-	// }
+	// 初始化敌人
+	for enemyType, positions := range config.Enemies {
+		for _, pos := range positions {
+			lvl.Enemies = append(lvl.Enemies, enemies.NewEnemies(pos.X, pos.Y, enemyType))
+		}
+	}
 
-	// // 初始化物品
-	// for itemType, positions := range config.Items {
-	// 	for _, pos := range positions {
-	// 		item := item.NewItem(itemType)
-	// 		item.SetPosition(pos.X, pos.Y)
-	// 		lvl.Items = append(lvl.Items, item)
-	// 	}
-	// }
+	// 初始化物品
+	for itemType, positions := range config.Items {
+		for _, pos := range positions {
+			lvl.Item = append(lvl.Item, item.NewItem(pos.X, pos.Y, itemType))
+		}
+	}
 	return lvl
 }
 func (l *Level) Update() {
 	l.destroyeffect.Update()
+	l.DynamicItem.Update()
 	//遍历物品，销毁已经被销毁的物品
 	for i := 0; i < len(l.Terrain); i++ {
 		if l.Terrain[i].Destroyed {
@@ -114,13 +116,17 @@ func (l *Level) Update() {
 }
 func (l *Level) Draw(screen *ebiten.Image) {
 	l.destroyeffect.Draw(screen, l.Camera)
+	l.DynamicItem.Draw(screen, l.Camera)
 	drawables := make([]camera.Drawable, 0)
+
 	// for _, enemy := range l.Enemies {
 	// 	drawables = append(drawables, enemy)
 	// }
+
 	// for _, item := range l.Item {
 	// 	drawables = append(drawables, item)
 	// }
+
 	for _, terrain := range l.Terrain {
 		drawables = append(drawables, terrain)
 	}
@@ -135,6 +141,8 @@ func (l *Level) Draw(screen *ebiten.Image) {
 	}
 
 }
+
+// isVisible 检查对象是否在摄像头视野内
 func isVisible(d camera.Drawable, c *camera.Camera) bool {
 	x, y := d.GetPosition()
 	w, h := d.GetSize()
