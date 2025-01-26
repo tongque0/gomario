@@ -116,6 +116,7 @@ func (t *Terrain) Destroy() {
 
 // OnMarioCollision 处理马里奥与地形的碰撞
 // 默认情况下,地形不会有变化
+// 待重构：将碰撞检测逻辑移动到碰撞检测模块
 func (t *Terrain) OnMarioCollision(direction int, isbig, isjumping bool) {
 	switch t.Kind {
 	case 0: // 不可破坏的墙壁

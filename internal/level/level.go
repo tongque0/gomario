@@ -95,26 +95,34 @@ func NewLevel(level int) *Level {
 	return lvl
 }
 func (l *Level) Update() {
+	//销毁特效
 	l.destroyeffect.Update()
+
+	//碰撞系统
+	physics.CheckPlayerTerrainCollision(l.Mario, l.Terrain)
+	physics.CheckPlayerEnemyCollision(l.Mario, l.Enemies)
+	physics.CheckPlayerItemCollision(l.Mario, l.Item)
+
+	// 更新所有对象
 	l.DynamicItem.Update()
-	//遍历物品，销毁已经被销毁的物品
 	for i := 0; i < len(l.Terrain); i++ {
 		if l.Terrain[i].Destroyed {
 			l.Terrain = append(l.Terrain[:i], l.Terrain[i+1:]...)
 			i--
+		} else {
+			l.Terrain[i].Update()
 		}
 	}
-	physics.CheckPlayerEnemyCollision(l.Mario, l.Enemies)
-	// physics.CheckPlayerTerrainCollision(l.Mario, l.Item)
-	physics.CheckPlayerTerrainCollision(l.Mario, l.Terrain)
 	for _, enemy := range l.Enemies {
 		enemy.Update()
 	}
-	for _, item := range l.Item {
-		item.Update()
-	}
-	for _, terrain := range l.Terrain {
-		terrain.Update()
+	for i := 0; i < len(l.Item); i++ {
+		if l.Item[i].IsDestroy {
+			l.Item = append(l.Item[:i], l.Item[i+1:]...)
+			i--
+		} else {
+			l.Item[i].Update()
+		}
 	}
 	l.Mario.Update()
 	l.Camera.Update(l.Mario.X, l.Mario.Y)

@@ -194,6 +194,7 @@ func (m *Mario) Draw(screen *ebiten.Image, camera *camera.Camera) {
 }
 
 // dirction: 1-top, 2-bottom, 3-left, 4-right
+// 待重构：将碰撞检测逻辑移动到碰撞检测模块
 func (m *Mario) OnTerrainCollision(direction int, terrainX, terrainY, terrainWidth, terrainHeight float64) {
 	// 处理马里奥与地形的碰撞
 	//上下碰撞,Y轴速度清零;左右碰撞,X轴速度清零;

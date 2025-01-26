@@ -14,6 +14,8 @@ func NewSfxPlayer(name string) {
 		sfxPlayer = loadMusic("sound/small_jump.ogg")
 	case "brick_smash":
 		sfxPlayer = loadMusic("sound/brick_smash.ogg")
+	case "coin":
+		sfxPlayer = loadMusic("sound/coin.ogg")
 	}
 	sfxPlayer.Play()
 }

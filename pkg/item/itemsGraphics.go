@@ -31,6 +31,22 @@ func NewItemGraphics(x, y, width, height int) *ItemGraphics {
 	return ig
 }
 
+// 创建蘑菇的图像资源
 func NewMushroom() *ItemGraphics {
 	return NewItemGraphics(0, 0, 16, 16)
+}
+
+// 创建花的图像资源
+func NewFlower() *ItemGraphics {
+	return NewItemGraphics(0, 32, 16, 16)
+}
+
+// 创建星星的图像资源
+func NewStar() *ItemGraphics {
+	return NewItemGraphics(0, 64, 16, 16)
+}
+
+// 创建金币的图像资源
+func NewCoin() *ItemGraphics {
+	return NewItemGraphics(0, 96, 16, 16)
 }

@@ -4,6 +4,7 @@ import (
 	"gomario/pkg/enemies"
 	"gomario/pkg/item"
 	"gomario/pkg/mario"
+	"gomario/pkg/sound"
 	"gomario/pkg/terrain"
 )
 
@@ -82,7 +83,30 @@ func CheckPlayerItemCollision(player *mario.Mario, items []*item.Item) {
 	for _, item := range items {
 		itemRect := Rectangle{item.X, item.Y, item.Width, item.Height}
 		if direction := CheckCollision(playerRect, itemRect); direction != None {
-			// player.OnItemCollision(item)
+			// item.OnMarioCollision(int(direction), player.IsBig)
+			// player.OnItemCollision(int(direction), item.X, item.Y, item.Width, item.Height, item.Kind)
+			onMarioCollisionItem(int(direction), player, item)
 		}
+	}
+}
+
+func onMarioCollisionTerrain(direction int, mario *mario.Mario, terrain *terrain.Terrain) {
+
+}
+func onMarioCollisionItem(direction int, mario *mario.Mario, item *item.Item) {
+	switch item.Kind {
+	case "mushroom":
+
+	case "flower":
+
+	case "star":
+
+	case "coin":
+		mario.Coins++
+		sound.NewSfxPlayer("coin")
+		item.IsDestroy = true
+	}
+	if item.IsDestroy {
+		return
 	}
 }
